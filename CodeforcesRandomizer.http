@@ -1,0 +1,11 @@
+@CodeforcesRandomizer_HostAddress = http://localhost:5096
+
+### Get 5 random unsolved problems for a user
+GET {{CodeforcesRandomizer_HostAddress}}/api/problems/random/tourist
+Accept: application/json
+
+### Get 3 random unsolved problems for a user
+GET {{CodeforcesRandomizer_HostAddress}}/api/problems/random/tourist?count=3
+Accept: application/json
+
+###

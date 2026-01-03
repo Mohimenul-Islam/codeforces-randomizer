@@ -1,11 +1,19 @@
 @CodeforcesRandomizer_HostAddress = http://localhost:5096
 
-### Get random unsolved problems
+### Get random unsolved problems (default 800-2000)
 GET {{CodeforcesRandomizer_HostAddress}}/api/problems/random/Petr
 Accept: application/json
 
 ### With custom count
 GET {{CodeforcesRandomizer_HostAddress}}/api/problems/random/Petr?count=3
+Accept: application/json
+
+### With rating range
+GET {{CodeforcesRandomizer_HostAddress}}/api/problems/random/Petr?minRating=1200&maxRating=1600
+Accept: application/json
+
+### Hard problems only
+GET {{CodeforcesRandomizer_HostAddress}}/api/problems/random/Petr?minRating=2000&maxRating=3500&count=3
 Accept: application/json
 
 ### Invalid username
@@ -14,10 +22,6 @@ Accept: application/json
 
 ### Non-existent user
 GET {{CodeforcesRandomizer_HostAddress}}/api/problems/random/notexistuser999
-Accept: application/json
-
-### Invalid count
-GET {{CodeforcesRandomizer_HostAddress}}/api/problems/random/Petr?count=0
 Accept: application/json
 
 ###

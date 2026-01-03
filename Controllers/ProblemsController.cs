@@ -13,11 +13,13 @@ public class ProblemsController(ICodeforcesService codeforcesService) : Controll
     [HttpGet("random/{username}")]
     public async Task<ActionResult<IEnumerable<ProblemDto>>> GetRandomUnsolved(
         [FromRoute, RegularExpression(@"^[a-zA-Z0-9_]{3,24}$")] string username,
-        [FromQuery, Range(1, 365)] int count = 5)
+        [FromQuery, Range(1, 365)] int count = 5,
+        [FromQuery, Range(800, 3500)] int minRating = 800,
+        [FromQuery, Range(800, 3500)] int maxRating = 2000)
     {
         try
         {
-            var problems = await codeforcesService.GetRandomUnsolvedProblemsAsync(username, count);
+            var problems = await codeforcesService.GetRandomUnsolvedProblemsAsync(username, count, minRating, maxRating);
             return Ok(problems);
         }
         catch (UserNotFoundException ex)

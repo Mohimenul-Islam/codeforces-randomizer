@@ -19,7 +19,8 @@ public class CodeforcesService : ICodeforcesService
         _jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     }
 
-    public async Task<IEnumerable<ProblemDto>> GetRandomUnsolvedProblemsAsync(string username, int count = 5)
+    public async Task<IEnumerable<ProblemDto>> GetRandomUnsolvedProblemsAsync(
+        string username, int count = 5, int minRating = 800, int maxRating = 2000)
     {
         var allProblems = await GetAllProblemsAsync();
         var userSubmissions = await GetUserSubmissionsAsync(username);
@@ -31,6 +32,7 @@ public class CodeforcesService : ICodeforcesService
 
         var unsolvedProblems = allProblems
             .Where(p => !solvedProblemIds.Contains(p.ProblemId))
+            .Where(p => p.Rating >= minRating && p.Rating <= maxRating)
             .ToList();
 
         return unsolvedProblems

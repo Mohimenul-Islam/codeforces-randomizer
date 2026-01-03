@@ -24,8 +24,9 @@ x86/
 *.nupkg
 **/packages/*
 
-## User-specific
+## Personal
 appsettings.Development.json
+course.md
 
 ## OS
 .DS_Store

@@ -1,91 +1,90 @@
+using System.Net;
 using System.Text.Json;
+using CodeforcesRandomizer.Exceptions;
 using CodeforcesRandomizer.Models;
 using CodeforcesRandomizer.Models.Codeforces;
 
 namespace CodeforcesRandomizer.Services;
 
-/// <summary>
-/// Service for interacting with the Codeforces API.
-/// </summary>
 public class CodeforcesService : ICodeforcesService
 {
     private readonly HttpClient _httpClient;
     private readonly JsonSerializerOptions _jsonOptions;
-
     private const string BaseUrl = "https://codeforces.com/api";
 
     public CodeforcesService(HttpClient httpClient)
     {
         _httpClient = httpClient;
-        _jsonOptions = new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        };
+        _httpClient.Timeout = TimeSpan.FromSeconds(30);
+        _jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
     }
 
-    /// <inheritdoc />
     public async Task<IEnumerable<ProblemDto>> GetRandomUnsolvedProblemsAsync(string username, int count = 5)
     {
-        // Get all problems from Codeforces
         var allProblems = await GetAllProblemsAsync();
-
-        // Get user's submission history
         var userSubmissions = await GetUserSubmissionsAsync(username);
 
-        // Find problems the user has solved (verdict = "OK")
         var solvedProblemIds = userSubmissions
             .Where(s => s.Verdict == "OK")
             .Select(s => s.Problem.ProblemId)
             .ToHashSet();
 
-        // Get unsolved problems (never solved, may or may not have been attempted)
         var unsolvedProblems = allProblems
             .Where(p => !solvedProblemIds.Contains(p.ProblemId))
             .ToList();
 
-        // Randomly select the requested number of problems
-        var randomProblems = unsolvedProblems
+        return unsolvedProblems
             .OrderBy(_ => Random.Shared.Next())
             .Take(count)
-            .Select(MapToDto)
+            .Select(p => new ProblemDto(p.ProblemId, p.Name, p.Rating, p.Tags, p.Url))
             .ToList();
-
-        return randomProblems;
     }
 
-    /// <summary>
-    /// Fetches all problems from Codeforces problemset.
-    /// </summary>
     private async Task<IEnumerable<CfProblem>> GetAllProblemsAsync()
     {
-        var response = await _httpClient.GetStringAsync($"{BaseUrl}/problemset.problems");
-        var result = JsonSerializer.Deserialize<CfApiResponse<CfProblemsResult>>(response, _jsonOptions);
+        try
+        {
+            var response = await _httpClient.GetAsync($"{BaseUrl}/problemset.problems");
+            if (!response.IsSuccessStatusCode)
+                throw new CodeforcesApiException("Codeforces API unavailable.", (int)response.StatusCode);
 
-        return result?.Result.Problems ?? [];
+            var content = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<CfApiResponse<CfProblemsResult>>(content, _jsonOptions);
+            return result?.Result.Problems ?? [];
+        }
+        catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
+        {
+            throw new CodeforcesApiException("Request timed out.", ex);
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new CodeforcesApiException("Failed to connect to Codeforces.", ex);
+        }
     }
 
-    /// <summary>
-    /// Fetches all submissions for a specific user.
-    /// </summary>
     private async Task<IEnumerable<CfSubmission>> GetUserSubmissionsAsync(string username)
     {
-        var response = await _httpClient.GetStringAsync($"{BaseUrl}/user.status?handle={username}");
-        var result = JsonSerializer.Deserialize<CfApiResponse<CfSubmission[]>>(response, _jsonOptions);
+        try
+        {
+            var response = await _httpClient.GetAsync($"{BaseUrl}/user.status?handle={username}");
 
-        return result?.Result ?? [];
-    }
+            if (response.StatusCode == HttpStatusCode.BadRequest)
+                throw new UserNotFoundException(username);
 
-    /// <summary>
-    /// Maps a Codeforces problem to a DTO.
-    /// </summary>
-    private static ProblemDto MapToDto(CfProblem problem)
-    {
-        return new ProblemDto(
-            problem.ProblemId,
-            problem.Name,
-            problem.Rating,
-            problem.Tags,
-            problem.Url
-        );
+            if (!response.IsSuccessStatusCode)
+                throw new CodeforcesApiException("Codeforces API unavailable.", (int)response.StatusCode);
+
+            var content = await response.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<CfApiResponse<CfSubmission[]>>(content, _jsonOptions);
+            return result?.Result ?? [];
+        }
+        catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
+        {
+            throw new CodeforcesApiException("Request timed out.", ex);
+        }
+        catch (HttpRequestException ex)
+        {
+            throw new CodeforcesApiException("Failed to connect to Codeforces.", ex);
+        }
     }
 }

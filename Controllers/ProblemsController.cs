@@ -1,4 +1,3 @@
-using System.ComponentModel.DataAnnotations;
 using CodeforcesRandomizer.Exceptions;
 using CodeforcesRandomizer.Models;
 using CodeforcesRandomizer.Services;
@@ -10,16 +9,32 @@ namespace CodeforcesRandomizer.Controllers;
 [Route("api/[controller]")]
 public class ProblemsController(ICodeforcesService codeforcesService) : ControllerBase
 {
-    [HttpGet("random/{username}")]
+    [HttpPost("random")]
     public async Task<ActionResult<IEnumerable<ProblemDto>>> GetRandomUnsolved(
-        [FromRoute, RegularExpression(@"^[a-zA-Z0-9_]{3,24}$")] string username,
-        [FromQuery, Range(1, 365)] int count = 5,
-        [FromQuery, Range(800, 3500)] int minRating = 800,
-        [FromQuery, Range(800, 3500)] int maxRating = 2000)
+        [FromBody] ProblemRequest request)
     {
+        if (request.Usernames.Count == 0)
+            return BadRequest(new ProblemDetails
+            {
+                Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+                Title = "Bad Request",
+                Status = 400,
+                Detail = "At least 1 username is required."
+            });
+
+        if (request.Usernames.Count > 20)
+            return BadRequest(new ProblemDetails
+            {
+                Type = "https://tools.ietf.org/html/rfc7231#section-6.5.1",
+                Title = "Bad Request",
+                Status = 400,
+                Detail = "Maximum 20 users allowed."
+            });
+
         try
         {
-            var problems = await codeforcesService.GetRandomUnsolvedProblemsAsync(username, count, minRating, maxRating);
+            var problems = await codeforcesService.GetRandomUnsolvedProblemsAsync(
+                request.Usernames, request.Count, request.MinRating, request.MaxRating);
             return Ok(problems);
         }
         catch (UserNotFoundException ex)
@@ -44,3 +59,10 @@ public class ProblemsController(ICodeforcesService codeforcesService) : Controll
         }
     }
 }
+
+public record ProblemRequest(
+    List<string> Usernames,
+    int Count = 5,
+    int MinRating = 800,
+    int MaxRating = 2000
+);

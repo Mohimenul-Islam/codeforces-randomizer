@@ -20,22 +20,45 @@ public class CodeforcesService : ICodeforcesService
     }
 
     public async Task<IEnumerable<ProblemDto>> GetRandomUnsolvedProblemsAsync(
-        string username, int count = 5, int minRating = 800, int maxRating = 2000)
+        IEnumerable<string> usernames, int count = 5, int minRating = 800, int maxRating = 2000)
     {
-        var allProblems = await GetAllProblemsAsync();
-        var userSubmissions = await GetUserSubmissionsAsync(username);
+        var usernameList = usernames.Distinct().ToList();
 
-        var solvedProblemIds = userSubmissions
-            .Where(s => s.Verdict == "OK")
-            .Select(s => s.Problem.ProblemId)
-            .ToHashSet();
+        // Fetch all problems and user submissions in parallel
+        var allProblemsTask = GetAllProblemsAsync();
+        var submissionTasks = usernameList
+            .Select(async username => (Username: username, Result: await GetUserSubmissionsSafeAsync(username)))
+            .ToList();
 
-        var unsolvedProblems = allProblems
-            .Where(p => !solvedProblemIds.Contains(p.ProblemId))
+        var results = await Task.WhenAll(submissionTasks);
+        var allProblems = await allProblemsTask;
+
+        // Check for invalid usernames
+        var invalidUsernames = results
+            .Where(r => r.Result.IsError)
+            .Select(r => r.Username)
+            .ToList();
+
+        if (invalidUsernames.Count > 0)
+            throw new UserNotFoundException(invalidUsernames);
+
+        // Combine solved problems from ALL users
+        var solvedByAnyUser = new HashSet<string>();
+        foreach (var (_, result) in results)
+        {
+            var solvedIds = result.Submissions!
+                .Where(s => s.Verdict == "OK")
+                .Select(s => s.Problem.ProblemId);
+            solvedByAnyUser.UnionWith(solvedIds);
+        }
+
+        // Find problems unsolved by ALL users
+        var unsolvedByAll = allProblems
+            .Where(p => !solvedByAnyUser.Contains(p.ProblemId))
             .Where(p => p.Rating >= minRating && p.Rating <= maxRating)
             .ToList();
 
-        return unsolvedProblems
+        return unsolvedByAll
             .OrderBy(_ => Random.Shared.Next())
             .Take(count)
             .Select(p => new ProblemDto(p.ProblemId, p.Name, p.Rating, p.Tags, p.Url))
@@ -64,21 +87,21 @@ public class CodeforcesService : ICodeforcesService
         }
     }
 
-    private async Task<IEnumerable<CfSubmission>> GetUserSubmissionsAsync(string username)
+    private async Task<(bool IsError, IEnumerable<CfSubmission>? Submissions)> GetUserSubmissionsSafeAsync(string username)
     {
         try
         {
             var response = await _httpClient.GetAsync($"{BaseUrl}/user.status?handle={username}");
 
             if (response.StatusCode == HttpStatusCode.BadRequest)
-                throw new UserNotFoundException(username);
+                return (true, null); // User not found
 
             if (!response.IsSuccessStatusCode)
                 throw new CodeforcesApiException("Codeforces API unavailable.", (int)response.StatusCode);
 
             var content = await response.Content.ReadAsStringAsync();
             var result = JsonSerializer.Deserialize<CfApiResponse<CfSubmission[]>>(content, _jsonOptions);
-            return result?.Result ?? [];
+            return (false, result?.Result ?? []);
         }
         catch (TaskCanceledException ex) when (ex.InnerException is TimeoutException)
         {

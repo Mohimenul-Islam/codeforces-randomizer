@@ -1,7 +1,18 @@
 namespace CodeforcesRandomizer.Exceptions;
 
-public class UserNotFoundException(string username)
-    : Exception($"User '{username}' not found.")
+public class UserNotFoundException : Exception
 {
-    public string Username { get; } = username;
+    public IReadOnlyList<string> Usernames { get; }
+
+    public UserNotFoundException(string username)
+        : base($"User '{username}' not found.")
+    {
+        Usernames = [username];
+    }
+
+    public UserNotFoundException(IEnumerable<string> usernames)
+        : base($"Users not found: {string.Join(", ", usernames.Select(u => $"'{u}'"))}")
+    {
+        Usernames = usernames.ToList();
+    }
 }

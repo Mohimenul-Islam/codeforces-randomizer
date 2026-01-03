@@ -1,27 +1,58 @@
 @CodeforcesRandomizer_HostAddress = http://localhost:5096
 
-### Get random unsolved problems (default 800-2000)
-GET {{CodeforcesRandomizer_HostAddress}}/api/problems/random/Petr
-Accept: application/json
+### Single user - problems for just you
+POST {{CodeforcesRandomizer_HostAddress}}/api/problems/random
+Content-Type: application/json
 
-### With custom count
-GET {{CodeforcesRandomizer_HostAddress}}/api/problems/random/Petr?count=3
-Accept: application/json
+{
+  "usernames": ["Petr"]
+}
 
-### With rating range
-GET {{CodeforcesRandomizer_HostAddress}}/api/problems/random/Petr?minRating=1200&maxRating=1600
-Accept: application/json
+### Single user with options
+POST {{CodeforcesRandomizer_HostAddress}}/api/problems/random
+Content-Type: application/json
 
-### Hard problems only
-GET {{CodeforcesRandomizer_HostAddress}}/api/problems/random/Petr?minRating=2000&maxRating=3500&count=3
-Accept: application/json
+{
+  "usernames": ["Petr"],
+  "count": 3,
+  "minRating": 1200,
+  "maxRating": 1600
+}
 
-### Invalid username
-GET {{CodeforcesRandomizer_HostAddress}}/api/problems/random/ab
-Accept: application/json
+### Duplicates are handled (tourist appears twice - no problem!)
+POST {{CodeforcesRandomizer_HostAddress}}/api/problems/random
+Content-Type: application/json
 
-### Non-existent user
-GET {{CodeforcesRandomizer_HostAddress}}/api/problems/random/notexistuser999
-Accept: application/json
+{
+  "usernames": ["tourist", "Petr", "tourist"],
+  "count": 3
+}
+
+### ONE invalid username (reports which one is wrong)
+POST {{CodeforcesRandomizer_HostAddress}}/api/problems/random
+Content-Type: application/json
+
+{
+  "usernames": ["tourist", "Petr", "this_user_does_not_exist_12345"],
+  "count": 5
+}
+
+### MULTIPLE invalid usernames (reports ALL invalid ones)
+POST {{CodeforcesRandomizer_HostAddress}}/api/problems/random
+Content-Type: application/json
+
+{
+  "usernames": ["tourist", "fake_user_abc", "Petr", "another_fake_xyz"],
+  "count": 5
+}
+
+### Error: No users provided
+POST {{CodeforcesRandomizer_HostAddress}}/api/problems/random
+Content-Type: application/json
+
+{
+  "usernames": [],
+  "count": 5
+}
 
 ###

@@ -7,4 +7,7 @@ public class User
     public required string PasswordHash { get; set; }
     public string? CodeforcesHandle { get; set; }
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+    
+    public string? ResetToken { get; set; }
+    public DateTime? ResetTokenExpiry { get; set; }
 }

@@ -46,6 +46,7 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient<ICodeforcesService, CodeforcesService>();
 builder.Services.AddHttpClient<IAuthService, AuthService>();
 builder.Services.AddHttpClient<IGroupsService, GroupsService>();
+builder.Services.AddTransient<IEmailService, SmtpEmailService>();
 
 var app = builder.Build();
 

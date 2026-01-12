@@ -35,6 +35,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient<ICodeforcesService, CodeforcesService>();
 builder.Services.AddHttpClient<IAuthService, AuthService>();
+builder.Services.AddHttpClient<IGroupsService, GroupsService>();
 
 var app = builder.Build();
 

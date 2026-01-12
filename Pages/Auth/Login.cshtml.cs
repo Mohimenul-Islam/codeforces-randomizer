@@ -56,6 +56,6 @@ public class LoginModel(AppDbContext dbContext) : PageModel
         
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
         
-        return RedirectToPage("/Dashboard");
+        return RedirectToPage("/Search");
     }
 }

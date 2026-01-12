@@ -71,7 +71,7 @@ public class RegisterModel(AppDbContext dbContext, HttpClient httpClient) : Page
         
         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
         
-        return RedirectToPage("/Dashboard");
+        return RedirectToPage("/Search");
     }
     
     private async Task<bool> ValidateCodeforcesHandleAsync(string handle)

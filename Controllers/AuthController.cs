@@ -48,4 +48,24 @@ public class AuthController(IAuthService authService) : ControllerBase
             });
         }
     }
+
+    [HttpPost("login")]
+    public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest request)
+    {
+        try
+        {
+            var response = await authService.LoginAsync(request);
+            return Ok(response);
+        }
+        catch (InvalidCredentialsException ex)
+        {
+            return Unauthorized(new ProblemDetails
+            {
+                Type = "https://tools.ietf.org/html/rfc7235#section-3.1",
+                Title = "Unauthorized",
+                Status = 401,
+                Detail = ex.Message
+            });
+        }
+    }
 }

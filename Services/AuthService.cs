@@ -1,14 +1,18 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Net;
+using System.Security.Claims;
+using System.Text;
 using CodeforcesRandomizer.Data;
 using CodeforcesRandomizer.Exceptions;
 using CodeforcesRandomizer.Models;
 using CodeforcesRandomizer.Models.Auth;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 namespace CodeforcesRandomizer.Services;
 
-public class AuthService(AppDbContext dbContext, HttpClient httpClient) : IAuthService
+public class AuthService(AppDbContext dbContext, HttpClient httpClient, IConfiguration config) : IAuthService
 {
     private readonly PasswordHasher<User> _passwordHasher = new();
     private const string CodeforcesApiUrl = "https://codeforces.com/api/user.info?handles=";
@@ -34,6 +38,46 @@ public class AuthService(AppDbContext dbContext, HttpClient httpClient) : IAuthS
         await dbContext.SaveChangesAsync();
 
         return new AuthResponse(user.Id, user.Email, user.CodeforcesHandle);
+    }
+
+    public async Task<AuthResponse> LoginAsync(LoginRequest request)
+    {
+        var normalizedEmail = request.Email.ToLowerInvariant();
+        var user = await dbContext.Users.FirstOrDefaultAsync(u => u.Email == normalizedEmail);
+
+        if (user is null)
+            throw new InvalidCredentialsException();
+
+        var result = _passwordHasher.VerifyHashedPassword(null!, user.PasswordHash, request.Password);
+        if (result == PasswordVerificationResult.Failed)
+            throw new InvalidCredentialsException();
+
+        var token = GenerateJwtToken(user);
+        return new AuthResponse(user.Id, user.Email, user.CodeforcesHandle, token);
+    }
+
+    private string GenerateJwtToken(User user)
+    {
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:SecretKey"]!));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+        var expiry = DateTime.UtcNow.AddMinutes(int.Parse(config["Jwt:ExpiryMinutes"] ?? "60"));
+
+        var claims = new[]
+        {
+            new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
+            new Claim(JwtRegisteredClaimNames.Email, user.Email),
+            new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString())
+        };
+
+        var token = new JwtSecurityToken(
+            issuer: config["Jwt:Issuer"],
+            audience: config["Jwt:Audience"],
+            claims: claims,
+            expires: expiry,
+            signingCredentials: creds
+        );
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
     private async Task ValidateCodeforcesHandleAsync(string handle)

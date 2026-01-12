@@ -13,6 +13,7 @@ builder.Services.AddOpenApi();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddHttpClient<ICodeforcesService, CodeforcesService>();
+builder.Services.AddHttpClient<IAuthService, AuthService>();
 
 var app = builder.Build();
 

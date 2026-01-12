@@ -6,8 +6,8 @@ services:
     environment:
       - ConnectionStrings__DefaultConnection=Host=db;Database=codeforces_randomizer;Username=postgres;Password=postgres
       - Jwt__SecretKey=super_secret_key_at_least_32_chars_long_for_security
-      - Email__Username=islam15-5725@diu.edu.bd
-      - Email__Password=mock
+      - Email__Username=your-email@example.com
+      - Email__Password=your-app-password
     depends_on:
       - db
     restart: always

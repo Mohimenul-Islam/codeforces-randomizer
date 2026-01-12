@@ -15,6 +15,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
+        options.MapInboundClaims = false;  // Don't remap JWT claim names
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,

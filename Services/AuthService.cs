@@ -80,6 +80,15 @@ public class AuthService(AppDbContext dbContext, HttpClient httpClient, IConfigu
         return new JwtSecurityTokenHandler().WriteToken(token);
     }
 
+    public async Task<AuthResponse?> GetByIdAsync(int userId)
+    {
+        var user = await dbContext.Users.FindAsync(userId);
+        if (user is null)
+            return null;
+
+        return new AuthResponse(user.Id, user.Email, user.CodeforcesHandle);
+    }
+
     private async Task ValidateCodeforcesHandleAsync(string handle)
     {
         try

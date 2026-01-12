@@ -1,12 +1,14 @@
 using CodeforcesRandomizer.Exceptions;
 using CodeforcesRandomizer.Models;
 using CodeforcesRandomizer.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CodeforcesRandomizer.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
+[Authorize]
 public class ProblemsController(ICodeforcesService codeforcesService) : ControllerBase
 {
     [HttpPost("random")]

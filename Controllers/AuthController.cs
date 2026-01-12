@@ -1,6 +1,9 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using CodeforcesRandomizer.Exceptions;
 using CodeforcesRandomizer.Models.Auth;
 using CodeforcesRandomizer.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CodeforcesRandomizer.Controllers;
@@ -67,5 +70,22 @@ public class AuthController(IAuthService authService) : ControllerBase
                 Detail = ex.Message
             });
         }
+    }
+
+    [Authorize]
+    [HttpGet("me")]
+    public async Task<ActionResult<AuthResponse>> GetMe()
+    {
+        var userIdClaim = User.FindFirst(JwtRegisteredClaimNames.Sub) 
+            ?? User.FindFirst(ClaimTypes.NameIdentifier);
+        
+        if (userIdClaim is null || !int.TryParse(userIdClaim.Value, out var userId))
+            return Unauthorized();
+
+        var user = await authService.GetByIdAsync(userId);
+        if (user is null)
+            return NotFound();
+
+        return Ok(user);
     }
 }

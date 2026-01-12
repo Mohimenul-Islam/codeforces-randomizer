@@ -1,0 +1,43 @@
+@page
+@model DashboardModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<h1>Dashboard</h1>
+
+<div style="display: flex; justify-content: space-between; align-items: center;" class="mb-2">
+    <p style="color: var(--text-secondary);">
+        Welcome, @User.Identity?.Name
+    </p>
+    <a href="/Groups/Create" class="btn btn-primary">+ New Group</a>
+</div>
+
+@if (Model.Groups.Count == 0)
+{
+    <div class="card center-text">
+        <p style="color: var(--text-secondary);">No practice groups yet.</p>
+        <a href="/Groups/Create" class="btn btn-primary mt-1">Create your first group</a>
+    </div>
+}
+else
+{
+    <div class="groups-grid">
+        @foreach (var group in Model.Groups)
+        {
+            <div class="group-card">
+                <h3>@group.Name</h3>
+                <p class="usernames">@string.Join(", ", group.Usernames)</p>
+                <div class="group-actions">
+                    <a href="/Search?groupId=@group.Id" class="btn btn-primary">Search</a>
+                    <a href="/Groups/Edit/@group.Id" class="btn btn-secondary">Edit</a>
+                    <a href="/Groups/Delete/@group.Id" class="btn btn-danger">Delete</a>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<div class="mt-2">
+    <a href="/Search" class="btn btn-secondary">Search without a group</a>
+</div>

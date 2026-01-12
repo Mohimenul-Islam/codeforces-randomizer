@@ -1,0 +1,21 @@
+@page "{id:int}"
+@model DeleteModel
+@{
+    ViewData["Title"] = "Delete Group";
+}
+
+<div class="auth-container" style="max-width: 500px;">
+    <div class="card center-text">
+        <h2>Delete Group</h2>
+        
+        <p style="color: var(--text-secondary); margin: 1rem 0;">
+            Are you sure you want to delete <strong style="color: var(--accent);">@Model.GroupName</strong>?
+        </p>
+        <p style="color: var(--error); font-size: 0.9rem;">This action cannot be undone.</p>
+        
+        <form method="post" class="mt-2">
+            <button type="submit" class="btn btn-danger">Yes, Delete</button>
+            <a href="/Dashboard" class="btn btn-secondary" style="margin-left: 0.5rem;">Cancel</a>
+        </form>
+    </div>
+</div>

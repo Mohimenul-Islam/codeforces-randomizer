@@ -1,0 +1,39 @@
+@page
+@model RegisterModel
+@{
+    ViewData["Title"] = "Register";
+}
+
+<div class="auth-container">
+    <div class="card">
+        <h2 class="center-text">Register</h2>
+        
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="error-message">@Model.ErrorMessage</div>
+        }
+        
+        <form method="post">
+            <div class="form-group">
+                <label asp-for="Email">Email</label>
+                <input asp-for="Email" type="email" required />
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="Password">Password</label>
+                <input asp-for="Password" type="password" required minlength="6" />
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="CodeforcesHandle">Codeforces Handle (optional)</label>
+                <input asp-for="CodeforcesHandle" />
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Register</button>
+        </form>
+        
+        <p class="center-text mt-1" style="color: var(--text-secondary);">
+            Already have an account? <a href="/Auth/Login" style="color: var(--accent);">Login</a>
+        </p>
+    </div>
+</div>

@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - CF Randomizer</title>
+    <link rel="stylesheet" href="~/css/site.css" />
+</head>
+<body>
+    <header>
+        <nav>
+            <a href="/" class="logo">CF Randomizer</a>
+            <div class="nav-links">
+                @if (User.Identity?.IsAuthenticated == true)
+                {
+                    <a href="/Dashboard">Dashboard</a>
+                    <a href="/Search">Search</a>
+                    <a href="/Auth/Logout">Logout</a>
+                }
+                else
+                {
+                    <a href="/Auth/Login">Login</a>
+                    <a href="/Auth/Register">Register</a>
+                }
+            </div>
+        </nav>
+    </header>
+    <main>
+        @RenderBody()
+    </main>
+    <footer>
+        <p>Codeforces Randomizer &copy; 2026</p>
+    </footer>
+</body>
+</html>

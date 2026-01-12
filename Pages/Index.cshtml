@@ -1,0 +1,26 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="center-text mt-2">
+    <h1>Codeforces Randomizer</h1>
+    <p class="mt-1" style="color: var(--text-secondary);">
+        Find unsolved problems for you and your practice group
+    </p>
+    
+    @if (User.Identity?.IsAuthenticated != true)
+    {
+        <div class="mt-2">
+            <a href="/Auth/Register" class="btn btn-primary">Get Started</a>
+            <a href="/Auth/Login" class="btn btn-secondary" style="margin-left: 0.5rem;">Login</a>
+        </div>
+    }
+    else
+    {
+        <div class="mt-2">
+            <a href="/Dashboard" class="btn btn-primary">Go to Dashboard</a>
+        </div>
+    }
+</div>

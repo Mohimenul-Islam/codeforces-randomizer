@@ -1,0 +1,34 @@
+@page
+@model LoginModel
+@{
+    ViewData["Title"] = "Login";
+}
+
+<div class="auth-container">
+    <div class="card">
+        <h2 class="center-text">Login</h2>
+        
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="error-message">@Model.ErrorMessage</div>
+        }
+        
+        <form method="post">
+            <div class="form-group">
+                <label asp-for="Email">Email</label>
+                <input asp-for="Email" type="email" required />
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="Password">Password</label>
+                <input asp-for="Password" type="password" required />
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Login</button>
+        </form>
+        
+        <p class="center-text mt-1" style="color: var(--text-secondary);">
+            Don't have an account? <a href="/Auth/Register" style="color: var(--accent);">Register</a>
+        </p>
+    </div>
+</div>

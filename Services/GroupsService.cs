@@ -100,7 +100,6 @@ public class GroupsService(AppDbContext dbContext, HttpClient httpClient) : IGro
             
             if (response.StatusCode == HttpStatusCode.BadRequest)
             {
-                // At least one user is invalid - find which ones
                 var invalidUsers = new List<string>();
                 foreach (var username in usernames)
                 {

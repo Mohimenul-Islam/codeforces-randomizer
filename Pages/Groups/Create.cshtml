@@ -1,0 +1,32 @@
+@page
+@model CreateModel
+@{
+    ViewData["Title"] = "Create Group";
+}
+
+<div class="auth-container" style="max-width: 500px;">
+    <div class="card">
+        <h2>Create Practice Group</h2>
+        
+        @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+        {
+            <div class="error-message">@Model.ErrorMessage</div>
+        }
+        
+        <form method="post">
+            <div class="form-group">
+                <label asp-for="Name">Group Name</label>
+                <input asp-for="Name" placeholder="e.g. ICPC Team" required maxlength="50" />
+            </div>
+            
+            <div class="form-group">
+                <label asp-for="Usernames">Codeforces Handles (one per line)</label>
+                <textarea asp-for="Usernames" rows="5" placeholder="tourist&#10;jiangly&#10;Benq" required></textarea>
+            </div>
+            
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Create Group</button>
+        </form>
+        
+        <a href="/Dashboard" class="btn btn-secondary mt-1" style="display: block; text-align: center;">Cancel</a>
+    </div>
+</div>

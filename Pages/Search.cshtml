@@ -1,0 +1,79 @@
+@page
+@model SearchModel
+@{
+    ViewData["Title"] = "Search Problems";
+}
+
+<h1>Search Problems</h1>
+
+<div class="card">
+    @if (!string.IsNullOrEmpty(Model.ErrorMessage))
+    {
+        <div class="error-message">@Model.ErrorMessage</div>
+    }
+    
+    <form method="post">
+        @if (Model.Groups.Count > 0)
+        {
+            <div class="form-group">
+                <label asp-for="SelectedGroupId">Select a Group</label>
+                <select asp-for="SelectedGroupId" style="width: 100%; padding: 0.75rem; background: var(--bg-secondary); color: var(--text-primary); border: 1px solid var(--border); border-radius: 4px;">
+                    <option value="">-- Or enter usernames manually --</option>
+                    @foreach (var group in Model.Groups)
+                    {
+                        <option value="@group.Id">@group.Name (@string.Join(", ", group.Usernames.Take(3))@(group.Usernames.Count > 3 ? "..." : ""))</option>
+                    }
+                </select>
+            </div>
+            
+            <p style="color: var(--text-secondary); text-align: center; margin: 1rem 0;">— OR —</p>
+        }
+        
+        <div class="form-group">
+            <label asp-for="ManualUsernames">Enter Codeforces Handles (one per line)</label>
+            <textarea asp-for="ManualUsernames" rows="4" placeholder="tourist&#10;jiangly"></textarea>
+        </div>
+        
+        <div style="display: flex; gap: 1rem;">
+            <div class="form-group" style="flex: 1;">
+                <label asp-for="MinRating">Min Rating</label>
+                <input asp-for="MinRating" type="number" />
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label asp-for="MaxRating">Max Rating</label>
+                <input asp-for="MaxRating" type="number" />
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label asp-for="Count">Count</label>
+                <input asp-for="Count" type="number" min="1" max="20" />
+            </div>
+        </div>
+        
+        <button type="submit" class="btn btn-primary" style="width: 100%;">Find Problems</button>
+    </form>
+</div>
+
+@if (Model.Problems.Count > 0)
+{
+    <h2 class="mt-2">Results</h2>
+    <ul class="problem-list">
+        @foreach (var problem in Model.Problems)
+        {
+            <li class="problem-item">
+                <div>
+                    <a href="@problem.Url" target="_blank">@problem.Name</a>
+                    <span style="color: var(--text-secondary); font-size: 0.9rem; margin-left: 0.5rem;">
+                        (@problem.ProblemId)
+                    </span>
+                </div>
+                <span class="problem-rating">@problem.Rating</span>
+            </li>
+        }
+    </ul>
+}
+else if (Model.Searched)
+{
+    <div class="card center-text mt-2">
+        <p style="color: var(--text-secondary);">No unsolved problems found in the selected rating range.</p>
+    </div>
+}
